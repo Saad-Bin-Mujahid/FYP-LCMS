@@ -1,0 +1,295 @@
+<?php
+include('src/header.php');
+include('src/libs.php');
+include('../Database/dbcon.php');
+include('../Database/session.php');
+
+$result = mysqli_query($con, "select * from advocates where advocate_id='$session_id'") or die('Error In Session');
+$mainrow = mysqli_fetch_array($result);
+?>
+
+<div class="container mb-5 pb-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center h3">Total Clients</div>
+                    <?php
+                    if ($mainrow["admin"] == 0) {
+                        $result = mysqli_query($con, "CALL sp_count_clients($session_id)");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "<h1 class='text-center'>" . $row["count"] . "</h1>";
+                        }
+                    } else {
+                        $result = mysqli_query($con, "CALL sp_count_clients_all");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "<h1 class='text-center'>" . $row["count"] . "</h1>";
+                        }
+                    }
+
+                    $result->close();
+                    $con->next_result();
+                    ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <?php
+                    if ($mainrow["admin"] == 0) {
+                        $result = mysqli_query($con, "CALL sp_count_today_appointment($session_id)");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "
+                            <a href='read_today_appointments.php' class='text-dark text-decoration-none' title='Click for more details'>
+                            <div class='text-center h3'>Today's Appointments</div>
+                            <h1 class='text-center'>" . $row["count"] . "</h1></a>";
+                        }
+                    } else {
+                        $result = mysqli_query($con, "CALL sp_count_customer");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "
+                            <div class='text-center h3'>Consulting Customers</div>
+                            <h1 class='text-center'>" . $row["count"] . "</h1>";
+                        }
+                    }
+
+                    $result->close();
+                    $con->next_result();
+                    ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center h3">Total Cases</div>
+                    <?php
+                    if ($mainrow["admin"] == 0) {
+                        $result = mysqli_query($con, "CALL sp_count_cases($session_id)");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "<h1 class='text-center'>" . $row["count"] . "</h1>";
+                        }
+                    } else {
+                        $result = mysqli_query($con, "CALL sp_count_cases_all");
+                        while ($row = mysqli_fetch_array($result)) {
+                            echo "<h1 class='text-center'>" . $row["count"] . "</h1>";
+                        }
+                    }
+                    $result->close();
+                    $con->next_result();
+                    ?>
+                </div>
+            </div>
+        </div>
+        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <?php
+        $result4 = mysqli_query($con, "CALL sp_count_cases_per_advocate('" . $session_id . "')");
+        var_dump($result4,$session_id);
+        die();
+        while ($row4 = mysqli_fetch_array($result4)) {
+            $dataPoints4 = array(
+                array("label" => "Criminal", "y" => $row4[0]),
+                array("label" => "Civil", "y" => $row4[1]),
+                array("label" => "Business & Tax lawyer", "y" => $row4[2]),
+                array("label" => "Immigration Lawyer", "y" => $row4[3]),
+                array("label" => "Family lawyers", "y" => $row4[4]),
+                array("label" => "Labor Lawyer", "y" => $row4[5]),
+                array("label" => "Other", "y" => $row4[6]),
+            );
+        };
+        $result4->close();
+        $con->next_result();
+
+        $result = mysqli_query($con, "CALL sp_count_all");
+        while ($row = mysqli_fetch_array($result)) {
+            $dataPoints = array(
+                array("label" => "Clients", "y" => $row[0]),
+                array("label" => "Advocates", "y" => $row[1]),
+                array("label" => "Cases", "y" => $row[2]),
+            );
+        };
+
+        $result->close();
+        $con->next_result();
+
+        $result2 = mysqli_query($con, "CALL sp_count_advocates_per_cases");
+        while ($row2 = mysqli_fetch_array($result2)) {
+            $dataPoints2 = array(
+                array("label" => "Criminal", "y" => $row2[0]),
+                array("label" => "Civil", "y" => $row2[1]),
+                array("label" => "Business & Tax lawyer", "y" => $row2[2]),
+                array("label" => "Immigration Lawyer", "y" => $row2[3]),
+                array("label" => "Family lawyers", "y" => $row2[4]),
+                array("label" => "Labor Lawyer", "y" => $row2[5]),
+                array("label" => "Other", "y" => $row2[6]),
+            );
+        };
+        $result2->close();
+        $con->next_result();
+
+        $AdvocateName = 1;
+        if (isset($_GET["advocateName"])) {
+            $AdvocateName = $_GET["advocateName"];
+        }
+        $result3 = mysqli_query($con, "CALL sp_count_cases_per_advocate('" . $AdvocateName . "')");
+        while ($row3 = mysqli_fetch_array($result3)) {
+            $dataPoints3 = array(
+                array("label" => "Criminal", "y" => $row3[0]),
+                array("label" => "Civil", "y" => $row3[1]),
+                array("label" => "Business & Tax lawyer", "y" => $row3[2]),
+                array("label" => "Immigration Lawyer", "y" => $row3[3]),
+                array("label" => "Family lawyers", "y" => $row3[4]),
+                array("label" => "Labor Lawyer", "y" => $row3[5]),
+                array("label" => "Other", "y" => $row3[6]),
+            );
+        };
+        $result3->close();
+        $con->next_result();
+        ?>
+        <script>
+            window.onload = () => {
+                if (<?php echo $mainrow['admin'] ?> == 0) {
+                    var chart = new CanvasJS.Chart("chartContainer4", {
+                        animationEnabled: true,
+                        theme: "dark1", // "light1", "light2", "dark1", "dark2"
+                        title: {
+                            text: "Advocate Types"
+                        },
+                        axisY: {
+                            title: "Number of Advocates"
+                        },
+                        data: [{
+                            type: "column",
+                            dataPoints: <?php echo json_encode($dataPoints4, JSON_NUMERIC_CHECK); ?>
+                        }]
+                    });
+                    chart.render();
+                }
+                if (<?php echo $mainrow['admin'] ?> == 1) {
+                    var chart = new CanvasJS.Chart("chartContainer", {
+                        animationEnabled: true,
+                        theme: "light2", // "light1", "light2", "dark1", "dark2"
+                        title: {
+                            text: "Clients & Cases"
+                        },
+                        axisY: {
+                            title: "RECORDS"
+                        },
+                        data: [{
+                            type: "column",
+                            dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
+                        }]
+                    });
+                    chart.render();
+
+                    var chart = new CanvasJS.Chart("chartContainer2", {
+                        animationEnabled: true,
+                        theme: "dark1", // "light1", "light2", "dark1", "dark2"
+                        title: {
+                            text: "Advocate Types"
+                        },
+                        axisY: {
+                            title: "Number of Advocates"
+                        },
+                        data: [{
+                            type: "column",
+                            dataPoints: <?php echo json_encode($dataPoints2, JSON_NUMERIC_CHECK); ?>
+                        }]
+                    });
+                    chart.render();
+
+                    var chart = new CanvasJS.Chart("chartContainer3", {
+                        animationEnabled: true,
+                        theme: "dark1", // "light1", "light2", "dark1", "dark2"
+                        title: {
+                            text: "Advocate Cases"
+                        },
+                        axisY: {
+                            title: "Number of Cases"
+                        },
+                        data: [{
+                            type: "column",
+                            dataPoints: <?php echo json_encode($dataPoints3, JSON_NUMERIC_CHECK); ?>
+                        }]
+                    });
+                    chart.render();
+                    document.getElementById('dd').value = <?php echo $AdvocateName ?>
+                }
+            }
+        </script>
+
+
+        <?php
+        if ($mainrow["admin"] == 0) {
+            $advocates_result = mysqli_query($con, "CALL sp_get_advocates($session_id)");
+            while ($row = mysqli_fetch_array($advocates_result)) {
+                $img = urlencode($row['advocate_picture']);
+                echo "
+                <div id='chartContainer4' class='mt-5' style='height: 370px; width: 100%;'></div>
+                <div class='mt-3'>
+                <h1>Advocate's Profile</h1>
+                <form action='../Database/update_advocate.php' method='post'>
+                    <div class='row'>
+                        <div class='col-md-4'>
+                            <img src='../Temp/Images/Data/" . str_replace('+', ' ', $img) . "' width='100%'/>
+                        </div>
+                        <div class='col-md-8'>
+                            <div class='form-floating mb-3'>
+                                <input type='text' class='form-control shadow border-0 bg-light' name='naam' value=" . $row['advocate_name'] . " placeholder='Name'>
+                                <label for='floatingInput'>Advocate's Name</label>
+                            </div>
+                            <div class='form-floating mb-3'>
+                                <input type='email' class='form-control shadow border-0 bg-light' name='mail' value=" . $row['advocate_email'] . " placeholder='Name'>
+                                <label for='floatingInput'>Advocate's Email</label>
+                            </div>
+                            <div class='form-floating mb-3'>
+                                <input type='tel' class='form-control shadow border-0 bg-light' name='NIC' value=" . $row['advocate_cnic'] . " placeholder='Name'>
+                                <label for='floatingInput'>Advocate's CNIC</label>
+                            </div>
+                            <div class='form-floating mb-3'>
+                                <input type='text' class='form-control shadow border-0 bg-light' value=" . $row['advocate_phone'] . " name='mobile' placeholder='Name'>
+                                <label for='floatingInput'>Advocate's Mobile #</label>
+                            </div>
+                            <div class='form-floating mb-3'>
+                                <textarea class='form-control shadow border-0 bg-light' placeholder='Leave a comment here' name='address' id='address' style='height: 130px'>" . $row['advocate_address'] . "</textarea>
+                                <label for='address'>Residencial Address</label>
+                            </div>
+                            <button type='submit' name='update_profile' class='btn btn-outline-dark fw-bold w-50 text-center fs-4'>Update</button>    
+                        </div>
+                    </div>
+                </form>
+                </div>
+                ";
+            }
+        } else {
+            echo "
+            <div class='row'>
+                <div class='col-md-6'>
+                    <div id='chartContainer' class='mt-5' style='height: 370px; width: 100%;'></div>
+                </div>
+                <div class='col-md-6'>
+                    <div id='chartContainer2' class='mt-5' style='height: 370px; width: 100%;'></div>
+                </div>
+                <div class='col-md-2'>
+                    <div class='mt-3'>
+                        <form>
+                            <select class='dropdown' name='advocateName' onchange='this.form.submit()' id='dd'>
+                                "; // '".
+            $result = mysqli_query($con, "CALL sp_get_advocates_all()");
+            while ($row = mysqli_fetch_array($result)) {
+                echo "<option class='text-center' value=" . $row["advocate_id"] . ">" . $row["advocate_name"] . "</option>";
+            }
+            // .'"
+            echo "
+                            </select>
+                        </form>
+                    </div>    
+                </div>
+            </div>
+            ";
+            echo "<div id='chartContainer3' style='height: 370px; width: 100%;'></div>";
+        }
+        ?>
+    </div>
+</div>
