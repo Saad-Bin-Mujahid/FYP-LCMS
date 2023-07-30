@@ -16,3 +16,4 @@ CSS <br>
 BOOTSTRAP <br>
 JS <br>
 CORE PHP
+MYSQL
